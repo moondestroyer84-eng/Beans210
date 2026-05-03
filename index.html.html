@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#7c4dff">
+    <link rel="manifest" href="manifest.json">
+    <title>My System Hub</title>
+    <style>
+        /* CSS VARIABLES & THEMING */
+        :root {
+            --bg: #0b0b0e;
+            --card: #15151a;
+            --card-hover: #1c1c24;
+            --border: #2a2a32;
+            --text-main: #e1e1e6;
+            --text-dim: #a1a1aa;
+            --accent: #7c4dff;
+            --accent-glow: rgba(124, 77, 255, 0.3);
+            --danger: #ff5252;
+            --success: #69f0ae;
+            --blur: blur(10px);
+        }
+
+        /* LIGHT THEME OVERRIDES */
+        [data-theme="light"] {
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --card-hover: #f8f9fa;
+            --border: #dcdde1;
+            --text-main: #2f3640;
+            --text-dim: #7f8c8d;
+            --accent: #4834d4;
+            --accent-glow: rgba(72, 52, 212, 0.1);
+        }
+
+        /* SOFT THEME OVERRIDES */
+        [data-theme="soft"] {
+            --bg: #2d3436;
+            --card: #353b48;
+            --border: #4b515d;
+            --accent: #fab1a0;
+            --text-main: #dfe6e9;
+        }
+
+        * { box-sizing: border-box; transition: background 0.3s, border 0.3s; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0b0e;
+            color: #e1e1e6;
+            margin: 0;
+            padding-bottom: 80px; /* Space for bottom nav on mobile */
+            line-height: 1.6;
+        }
+
+
+        .navbar {
+            background-color: #15151a;
+            border-bottom: 1px solid #2a2a32;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
+        }
+
+        .nav-brand { font-weight: 800; font-size: 1.1rem; color: #7c4dff; letter-spacing: 1px; }
+
+        .nav-links { display: flex; gap: 5px; height: 100%; }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #a1a1aa;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-btn.active { color: #7c4dff; border-bottom-color: #7c4dff; background: rgba(124, 77, 255, 0.3); }
+
+        /* CONTAINER & LAYOUT */
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .view { display: none; animation: fadeIn 0.4s ease; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* FRONTING PANEL */
+        .front-hero {
+            background: linear-gradient(135deg, #15151a 0%, #101014 100%);
+            border: 1px solid #2a2a32;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .fronters-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        
+        .fronter-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid #7c4dff;
+            object-fit: cover;
+            padding: 3px;
+            background: #0b0b0e;
+        }
+
+        .fronter-info h1 { margin: 0; font-size: 1.8rem; }
+        .fronter-badge {
+            display: inline-block;
+            background: rgba(124, 77, 255, 0.3);
+            color: #7c4dff;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        /* CARDS */
+        .card {
+            background: #15151a;
+            border: 1px solid #2a2a32;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        .member-card {
+            background: #15151a;
+            border: 1px solid #2a2a32;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .member-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+
+        .member-banner { height: 80px; background: #7c4dff; opacity: 0.2; }
+
+        .member-content { padding: 15px; position: relative; margin-top: -40px; }
+
+        .member-pfp {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            border: 4px solid #15151a;
+            object-fit: cover;
+            background: #252525;
+        }
+
+        .member-meta { margin-top: 10px; }
+        .member-name { font-size: 1.1rem; font-weight: 700; margin: 5px 0; }
+        .member-sub { font-size: 0.8rem; color: #a1a1aa; font-weight: 500; }
+
+        /* BUTTONS */
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background: #7c4dff; color: white; }
+        .btn-primary:hover { filter: brightness(1.2); }
+        .btn-outline { background: transparent; border: 1px solid #2a2a32; color: #e1e1e6; }
+        .btn-outline:hover { background: #2a2a32; }
+        .btn-danger { background: rgba(255, 82, 82, 0.1); color: #ff5252; }
+        .btn-danger:hover { background: #ff5252; color: white; }
+
+        /* FORMS */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.8rem; font-weight: 700; color: #a1a1aa; margin-bottom: 8px; text-transform: uppercase; }
+        
+        input, select, textarea {
+            width: 100%;
+            background: #0b0b0e;
+            border: 1px solid #2a2a32;
+            color: #e1e1e6;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        input:focus { outline: none; border-color: #7c4dff; }
+
+        /* LOG TABLE */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .log-table th { text-align: left; padding: 12px; color: #a1a1aa; border-bottom: 1px solid #2a2a32; }
+        .log-table td { padding: 12px; border-bottom: 1px solid #2a2a32; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-content { background: #15151a; width: 90%; max-width: 500px; padding: 30px; border-radius: 20px; border: 1px solid #2a2a32; }
+
+        /* UTILS */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; background: #2a2a32; }
+
+        /* MOBILE RESPONSIVENESS */
+        @media (max-width: 768px) {
+            .container { padding: 0 15px; }
+            .navbar { padding: 0 10px; height: 50px; }
+            .nav-brand { font-size: 1rem; }
+            .nav-links { gap: 0; }
+            .nav-btn { padding: 0 10px; font-size: 0.75rem; }
+            .btn { padding: 12px 20px; font-size: 0.95rem; min-height: 44px; }
+            .card { padding: 15px; margin-bottom: 15px; }
+            .front-hero { padding: 20px; }
+            .fronter-avatar { width: 80px; height: 80px; }
+            .member-card { margin-bottom: 15px; }
+            .member-pfp { width: 60px; height: 60px; }
+            .grid { grid-template-columns: 1fr; gap: 15px; }
+            .log-table th, .log-table td { padding: 10px; font-size: 0.8rem; }
+            .modal-content { width: 95%; padding: 20px; }
+            .form-group { margin-bottom: 15px; }
+            input, select, textarea { padding: 14px; font-size: 1rem; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body id="app-body">
+
+    <nav class="navbar">
+        <div class="nav-brand">My System</div>
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="switchTab('dash', event)">Dashboard</button>
+            <button class="nav-btn" onclick="switchTab('members', event)">Directory</button>
+            <button class="nav-btn" onclick="switchTab('history', event)">Log</button>
+            <button class="nav-btn" onclick="switchTab('settings', event)">Settings</button>
+        </div>
+        <button class="btn btn-outline" style="padding: 5px 10px;" onclick="togglePrivacy()">🔒</button>
+    </nav>
+
+    <div class="container" id="main-container">
+
+        <div id="dash" class="view active">
+            <div class="front-hero">
+                <span class="fronter-badge">Currently Fronting</span>
+                <div id="active-fronters-list" class="fronters-container">
+                    </div>
+            </div>
+
+            <div class="flex-between" style="margin-bottom: 15px;">
+                <h2 style="font-size: 0.9rem; text-transform: uppercase; color: var(--text-dim);">Quick Switch</h2>
+                <button class="btn btn-outline" style="font-size: 0.7rem;" onclick="clearFront()">Clear All</button>
+            </div>
+            <div id="quick-grid" class="grid"></div>
+        </div>
+
+        <div id="members" class="view">
+            <div class="flex-between" style="margin-bottom: 25px;">
+                <h1>System Directory</h1>
+                <button class="btn btn-primary" onclick="openMemberModal()">+ Add Member</button>
+            </div>
+
+            <div class="card" style="padding: 10px; margin-bottom: 25px; display: flex; gap: 10px;">
+                <input type="text" id="search-bar" placeholder="Search members by name or role..." oninput="renderMembers()">
+                <select id="filter-group" style="width: 150px;" onchange="renderMembers()">
+                    <option value="All">All Groups</option>
+                    <option value="Internal">Internal</option>
+                    <option value="Fronting">Fronting Team</option>
+                    <option value="Littles">Littles</option>
+                </select>
+            </div>
+
+            <div id="directory-grid" class="grid"></div>
+        </div>
+
+        <div id="history" class="view">
+            <h1>Switching History</h1>
+            <div class="card">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Action</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-log-body">
+                        </tbody>
+                </table>
+                <button class="btn btn-danger" style="margin-top: 20px; width: 100%;" onclick="clearLogs()">Clear History</button>
+            </div>
+        </div>
+
+        <div id="settings" class="view">
+            <h1>Settings</h1>
+            <div class="card">
+                <label>UI Theme</label>
+                <select id="theme-selector" onchange="changeTheme(this.value)">
+                    <option value="dark">Midnight (Default)</option>
+                    <option value="light">Daylight</option>
+                    <option value="soft">Soft Forest</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <label>Data Management</label>
+                <p style="font-size: 0.8rem; color: #a1a1aa;">Copy your System Key to share or backup your data.</p>
+                <textarea id="system-key-box" readonly rows="4" style="font-family: monospace; font-size: 0.7rem; background: #000; color: #69f0ae;"></textarea>
+                <div class="flex-between" style="margin-top: 10px; gap: 10px;">
+                    <button class="btn btn-outline" style="flex:1" onclick="generateKey()">Generate Key</button>
+                    <button class="btn btn-outline" style="flex:1" onclick="importData()">Import Data</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <label>Sharing</label>
+                <p style="font-size: 0.8rem; color: #a1a1aa;">Share this link for friends to view (read-only):</p>
+                <input id="viewer-link" readonly value="" style="width: 100%; background: #0b0b0e; border: 1px solid #2a2a32; color: #e1e1e6; padding: 12px; border-radius: 8px;">
+            </div>
+        </div>
+    </div>
+
+    <div id="member-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title">New System Member</h2>
+            <form id="member-form">
+                <input type="hidden" id="edit-index" value="-1">
+                
+                <div class="form-group">
+                    <label>Profile Image</label>
+                    <input type="file" id="m-pfp" accept="image/*">
+                </div>
+
+                <div class="flex-between" style="gap: 15px;">
+                    <div class="form-group" style="flex: 2;">
+                        <label>Name</label>
+                        <input type="text" id="m-name" required placeholder="Name">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Age</label>
+                        <input type="number" id="m-age" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pronouns</label>
+                    <input type="text" id="m-pronouns" placeholder="they/them">
+                </div>
+
+                <div class="form-group">
+                    <label>System Role</label>
+                    <input type="text" id="m-role" placeholder="Protector, Caregiver, etc.">
+                </div>
+
+                <div class="form-group">
+                    <label>Group / Folder</label>
+                    <select id="m-group">
+                        <option value="Internal">Internal</option>
+                        <option value="Fronting">Fronting Team</option>
+                        <option value="Littles">Littles</option>
+                    </select>
+                </div>
+
+                <div class="flex-between" style="gap: 10px;">
+                    <button type="button" class="btn btn-outline" style="flex:1" onclick="closeMemberModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /* APP STATE */
+        let state = {
+            members: JSON.parse(localStorage.getItem('nx_members')) || [],
+            history: JSON.parse(localStorage.getItem('nx_history')) || [],
+            activeFronters: JSON.parse(localStorage.getItem('nx_active')) || [],
+            theme: localStorage.getItem('nx_theme') || 'dark'
+        };
+
+        let currentPfpBuffer = "";
+
+        let isViewerMode = false;
+
+        /* INITIALIZATION */
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('data');
+            if (dataParam) {
+                importData(dataParam);
+            }
+
+            applyTheme(state.theme);
+            renderAll();
+
+            document.getElementById('viewer-link').value = window.location.origin + window.location.pathname + '?viewer=true&data=' + btoa(JSON.stringify(state));
+
+            isViewerMode = urlParams.has('viewer');
+            if (isViewerMode) {
+                document.body.classList.add('viewer-mode');
+                document.querySelectorAll('.btn:not(.nav-btn)').forEach(btn => btn.style.display = 'none');
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                document.querySelectorAll('button[onclick*="delete"], button[onclick*="openMemberModal"], button[onclick*="clearFront"], button[onclick*="generateKey"], button[onclick*="importData"]').forEach(btn => btn.style.display = 'none');
+                document.getElementById('theme-selector').disabled = true;
+            }
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js');
+            }
+        };
+
+        /* CORE FUNCTIONS */
+        function save() {
+            localStorage.setItem('nx_members', JSON.stringify(state.members));
+            localStorage.setItem('nx_history', JSON.stringify(state.history));
+            localStorage.setItem('nx_active', JSON.stringify(state.activeFronters));
+            localStorage.setItem('nx_theme', state.theme);
+        }
+
+        function switchTab(tabId, event) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(event) event.currentTarget.classList.add('active');
+        }
+
+        function togglePrivacy() {
+            document.getElementById('main-container').classList.toggle('privacy-blur');
+        }
+
+        /* MEMBER MANAGEMENT */
+        document.getElementById('m-pfp').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => { currentPfpBuffer = reader.result; };
+            if (file) reader.readAsDataURL(file);
+        });
+
+        function openMemberModal(index = -1) {
+            const modal = document.getElementById('member-modal');
+            const form = document.getElementById('member-form');
+            modal.style.display = 'flex';
+            
+            if(index > -1) {
+                const m = state.members[index];
+                document.getElementById('modal-title').innerText = "Edit Profile";
+                document.getElementById('edit-index').value = index;
+                document.getElementById('m-name').value = m.name;
+                document.getElementById('m-age').value = m.age;
+                document.getElementById('m-pronouns').value = m.pronouns;
+                document.getElementById('m-role').value = m.role;
+                document.getElementById('m-group').value = m.group;
+                currentPfpBuffer = m.pfp;
+            } else {
+                form.reset();
+                document.getElementById('modal-title').innerText = "New System Member";
+                document.getElementById('edit-index').value = -1;
+                currentPfpBuffer = "";
+            }
+        }
+
+        function closeMemberModal() {
+            document.getElementById('member-modal').style.display = 'none';
+        }
+
+        document.getElementById('member-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('edit-index').value);
+            
+            const memberData = {
+                name: document.getElementById('m-name').value,
+                age: document.getElementById('m-age').value,
+                pronouns: document.getElementById('m-pronouns').value,
+                role: document.getElementById('m-role').value,
+                group: document.getElementById('m-group').value,
+                pfp: currentPfpBuffer
+            };
+
+            if(idx > -1) state.members[idx] = memberData;
+            else state.members.push(memberData);
+
+            save();
+            closeMemberModal();
+            renderAll();
+        });
+
+        function deleteMember(index) {
+            if(confirm("Permanently delete this profile?")) {
+                state.members.splice(index, 1);
+                // Also remove from active fronters if they were there
+                state.activeFronters = state.activeFronters.filter(name => name !== state.members[index]?.name);
+                save();
+                renderAll();
+            }
+        }
+
+        /* FRONTING LOGIC */
+        function toggleFront(index) {
+            const member = state.members[index];
+            const activeIdx = state.activeFronters.indexOf(member.name);
+
+            if(activeIdx > -1) {
+                state.activeFronters.splice(activeIdx, 1);
+                addLog(member.name, "Left Front");
+            } else {
+                state.activeFronters.unshift(member.name);
+                addLog(member.name, "Joined Front");
+            }
+            save();
+            renderAll();
+        }
+
+        function clearFront() {
+            state.activeFronters = [];
+            addLog("System", "Cleared all fronters");
+            save();
+            renderAll();
+        }
+
+        function addLog(name, action) {
+            const entry = {
+                name: name,
+                action: action,
+                time: new Date().toLocaleString()
+            };
+            state.history.unshift(entry);
+            if(state.history.length > 50) state.history.pop(); // Keep log manageable
+        }
+
+        function generateKey() {
+            const key = btoa(JSON.stringify(state));
+            document.getElementById('system-key-box').value = key;
+        }
+
+        function importData(key = null) {
+            if (!key) key = prompt('Paste your System Key:');
+            if (key) {
+                try {
+                    const data = JSON.parse(atob(key));
+                    state = data;
+                    save();
+                    renderAll();
+                } catch (e) {
+                    alert('Invalid key');
+                }
+            }
+        }
+
+        /* RENDERING ENGINES */
+        function renderAll() {
+            renderFronters();
+            renderDirectory();
+            renderQuickSwitch();
+            renderLogs();
+        }
+
+        function renderFronters() {
+            const container = document.getElementById('active-fronters-list');
+            container.innerHTML = '';
+
+            if(state.activeFronters.length === 0) {
+                container.innerHTML = `<div style="color:#a1a1aa">No one is currently fronting.</div>`;
+                return;
+            }
+
+            state.activeFronters.forEach(name => {
+                const m = state.members.find(mem => mem.name === name);
+                const div = document.createElement('div');
+                div.className = 'flex-between';
+                div.style = 'gap: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 50px; pr: 20px';
+                
+                const img = m?.pfp ? `<img src="${m.pfp}" class="fronter-avatar" style="width:40px; height:40px;">` : `<div class="fronter-avatar" style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:#7c4dff">${name[0]}</div>`;
+                
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        ${img}
+                        <div>
+                            <div style="font-weight:bold; font-size:0.9rem;">${name} <span class="badge">${state.activeFronters.indexOf(name) === 0 ? 'Front' : 'Co-Front'}</span></div>
+                            <div style="font-size:0.7rem; color:#a1a1aa">${m?.role || 'Member'}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderDirectory() {
+            const grid = document.getElementById('directory-grid');
+            const search = document.getElementById('search-bar').value.toLowerCase();
+            const filter = document.getElementById('filter-group').value;
+            grid.innerHTML = '';
+
+            state.members.forEach((m, i) => {
+                if(filter !== 'All' && m.group !== filter) return;
+                if(search && !m.name.toLowerCase().includes(search) && !m.role.toLowerCase().includes(search)) return;
+
+                const card = document.createElement('div');
+                card.className = 'member-card';
+                const img = m.pfp ? `<img src="${m.pfp}" class="member-pfp">` : `<div class="member-pfp" style="display:flex; align-items:center; justify-content:center; background:#333;">${m.name[0]}</div>`;
+                
+                card.innerHTML = `
+                    <div class="member-banner"></div>
+                    <div class="member-content">
+                        ${img}
+                        <div class="member-meta">
+                            <div class="member-name">${m.name} <span class="badge">${m.age || '?'}</span></div>
+                            <div class="member-sub">${m.role} • ${m.pronouns}</div>
+                            <div style="margin-top:15px; display:flex; gap:5px;">
+                                ${isViewerMode ? '' : '<button class="btn btn-outline" style="flex:1; padding:5px; font-size:0.7rem;" onclick="openMemberModal(' + i + ')">Edit</button>'}
+                                ${isViewerMode ? '' : '<button class="btn btn-danger" style="flex:1; padding:5px; font-size:0.7rem;" onclick="deleteMember(' + i + ')">Delete</button>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderQuickSwitch() {
+            const grid = document.getElementById('quick-grid');
+            grid.innerHTML = '';
+
+            state.members.forEach((m, i) => {
+                const isActive = state.activeFronters.includes(m.name);
+                const card = document.createElement('div');
+                card.className = 'card flex-between';
+                card.style = `padding: 12px; margin-bottom: 0; cursor: ${isViewerMode ? 'default' : 'pointer'}; border-left: 4px solid ${isActive ? '#7c4dff' : 'transparent'}`;
+                if (!isViewerMode) card.onclick = () => toggleFront(i);
+
+                const img = m.pfp ? `<img src="${m.pfp}" style="width:35px; height:35px; border-radius:5px; object-fit:cover;">` : `<div style="width:35px; height:35px; background:#333; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">${m.name[0]}</div>`;
+
+                card.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        ${img}
+                        <div>
+                            <div style="font-weight:700; font-size:0.85rem;">${m.name}</div>
+                            <div style="font-size:0.7rem; color:var(--text-dim)">${m.role}</div>
+                        </div>
+                    </div>
+                    <div style="color: ${isActive ? '#7c4dff' : '#a1a1aa'}; font-size: 0.7rem; font-weight: 800;">
+                        ${isActive ? 'ACTIVE' : 'OFFLINE'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderLogs() {
+            const tbody = document.getElementById('history-log-body');
+            tbody.innerHTML = '';
+            state.history.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:bold">${log.name}</td>
+                    <td><span class="badge" style="background:${log.action.includes('Joined') ? 'var(--success)' : 'var(--danger)'}; color:#000">${log.action}</span></td>
+                    <td style="color:var(--text-dim)">${log.time}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearLogs() {
+            if(confirm("Clear all history?")) {
+                state.history = [];
+                save();
+                renderLogs();
+            }
+        }
+
+        /* THEMING */
+        function changeTheme(themeName) {
+            state.theme = themeName;
+            applyTheme(themeName);
+            save();
+        }
+
+        function applyTheme(themeName) {
+            document.body.setAttribute('data-theme', themeName);
+            document.getElementById('theme-selector').value = themeName;
+        }
+
+        /* DATA PORTABILITY */
+        function generateKey() {
+            const key = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+            document.getElementById('system-key-box').value = key;
+            alert("System Key Generated! This contains all your profiles and settings.");
+        }
+
+        function importData() {
+            const key = prompt("Paste your System Key here:");
+            if(!key) return;
+            try {
+                const decoded = JSON.parse(decodeURIComponent(escape(atob(key))));
+                if(confirm("This will overwrite all current data. Continue?")) {
+                    state = decoded;
+                    save();
+                    location.reload();
+                }
+            } catch(e) {
+                alert("Error: Invalid System Key.");
+            }
+        }
+    </script>
+</body>
+</html>
